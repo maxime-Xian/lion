@@ -1,7 +1,7 @@
 const http = require('http');
 
 // API密钥
-const API_KEY = '4d741fcd-733b-454f-bc06-7326e3d824ec';
+const API_KEY = process.env.DEEPSEEK_API_KEY;
 
 // 构建API请求选项
 const apiRequestOptions = {
