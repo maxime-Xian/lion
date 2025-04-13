@@ -237,7 +237,7 @@ const server = http.createServer((req, res) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer 4d741fcd-733b-454f-bc06-7326e3d824ec'
+            'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
           }
         };
         
