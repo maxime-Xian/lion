@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>外国人中文名生成器</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .subtitle {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #666;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    .generate-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    .generate-btn:hover {
+      background-color: #c0392b;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #e74c3c;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .results {
+      display: none;
+      margin-top: 30px;
+    }
+    .name-card {
+      background-color: #f9f9f9;
+      border-left: 4px solid #e74c3c;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .chinese-name {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #e74c3c;
+    }
+    .meaning {
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+    .meaning-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .error {
+      color: #e74c3c;
+      text-align: center;
+      margin-top: 20px;
+      display: none;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #888;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>外国人中文名生成器</h1>
+    <p class="subtitle">输入您的英文名，获取具有中国文化特色的中文名</p>
+    
+    <div class="form-group">
+      <label for="englishName">您的英文名:</label>
+      <input type="text" id="englishName" placeholder="例如: John, Emma, Michael...">
+    </div>
+    
+    <button class="generate-btn" id="generateBtn">生成中文名</button>
+    
+    <div class="loading" id="loading">
+      <div class="loading-spinner"></div>
+      <p>正在生成中文名，请稍候...</p>
+    </div>
+    
+    <div class="error" id="error">抱歉，生成过程中出现错误，请稍后再试。</div>
+    
+    <div class="results" id="results">
+      <!-- 结果将通过JavaScript动态生成 -->
+    </div>
+    
+    <div class="footer">
+      <p>© 2023 中文名生成器 - 帮助外国友人融入中国文化</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const generateBtn = document.getElementById('generateBtn');
+      const englishNameInput = document.getElementById('englishName');
+      const loadingElement = document.getElementById('loading');
+      const resultsElement = document.getElementById('results');
+      const errorElement = document.getElementById('error');
+      
+      // API密钥
+      const API_KEY = '4d741fcd-733b-454f-bc06-7326e3d824ec';
+      
+      console.log('DOM已加载，正在设置事件监听器...');
+      
+      // 确保按钮元素存在
+      if (!generateBtn) {
+        console.error('无法找到生成按钮元素！');
+      } else {
+        console.log('找到生成按钮元素，添加点击事件监听器');
+        
+        // 绑定事件处理函数
+        generateBtn.addEventListener('click', function(event) {
+          console.log('按钮被点击了！');
+          generateChineseNames();
+        });
+      }
+      
+      async function generateChineseNames() {
+        console.log('generateChineseNames函数被调用');
+        const englishName = englishNameInput.value.trim();
+        console.log('输入的英文名:', englishName);
+        
+        if (!englishName) {
+          alert('请输入您的英文名');
+          console.log('未输入英文名，已显示提示');
+          return;
+        }
+        
+        // 显示加载状态
+        loadingElement.style.display = 'block';
+        resultsElement.style.display = 'none';
+        errorElement.style.display = 'none';
+        console.log('显示加载状态，隐藏结果和错误信息');
+        
+        try {
+          console.log('开始发送API请求...');
+          // 通过我们的Node.js服务器调用API
+          const response = await fetch('/api/generate-names', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              englishName: englishName,
+              apiKey: API_KEY
+            })
+          });
+          
+          console.log('API响应状态:', response.status);
+          
+          if (!response.ok) {
+            throw new Error(`API请求失败: ${response.status}`);
+          }
+          
+          console.log('解析API响应...');
+          const data = await response.json();
+          console.log('API响应数据:', data);
+          
+          // 检查是否有错误信息
+          if (data.error) {
+            throw new Error(data.error);
+          }
+          
+          const aiResponse = data.choices[0].message.content;
+          
+          // 添加提示词优化，确保生成3个有趣的中文名
+          const prompt = `请为外国人${englishName}生成3个有趣的中文名字，每个名字需要：\n1. 体现中国文化元素\n2. 包含中英文解释\n3. 适当加入幽默元素或网络梗\n4. 格式为：名字1：中文名 (拼音) \n中文解释：...\n英文解释：...\n\n名字2：...`;
+          console.log('AI响应内容:', aiResponse);
+          
+          // 解析AI响应
+          console.log('开始解析AI响应...');
+          const names = parseAIResponse(aiResponse);
+          console.log('解析后的名字:', names);
+          
+          // 显示结果
+          console.log('显示结果...');
+          displayResults(names);
+        } catch (error) {
+          console.error('生成中文名时出错:', error);
+          errorElement.style.display = 'block';
+        } finally {
+          loadingElement.style.display = 'none';
+        }
+      }
+      
+      function parseAIResponse(response) {
+        const names = [];
+        
+        // 添加调试信息，查看API返回的原始响应
+        console.log('API原始响应:', response);
+        
+        // 使用正则表达式匹配名字和解释 - 更健壮的模式
+        const namePattern = /名字\s*\d+\s*[：:]+\s*([^\n]+)[\s\n]*中文解释\s*[：:]+\s*([\s\S]*?)(?=\s*英文解释|\s*名字\s*\d+|$)[\s\n]*(?:英文解释\s*[：:]+\s*([\s\S]*?)(?=\s*名字\s*\d+|$))?/g;
+        
+        let match;
+        while ((match = namePattern.exec(response)) !== null) {
+          names.push({
+            name: match[1].trim(),
+            chineseExplanation: match[2] ? match[2].trim() : '未提供中文解释',
+            englishExplanation: match[3] ? match[3].trim() : '未提供英文解释'
+          });
+        }
+        
+        // 如果正则表达式没有匹配到结果，尝试更宽松的解析方法
+        if (names.length === 0) {
+          // 尝试匹配任何可能包含名字的部分
+          const nameLines = response.match(/[\u4e00-\u9fa5]{2,4}\s*[（(][a-zA-Z\s]+[)）]/g);
+          
+          if (nameLines && nameLines.length > 0) {
+            // 找到了可能的中文名
+            for (let i = 0; i < nameLines.length; i++) {
+              const nameLine = nameLines[i];
+              const nameMatch = nameLine.match(/([\u4e00-\u9fa5]{2,4})\s*[（(]([a-zA-Z\s]+)[)）]/);
+              
+              if (nameMatch) {
+                const chineseName = nameMatch[1];
+                const pinyinName = nameMatch[2];
+                
+                // 尝试在名字后面找到解释
+                let startIndex = response.indexOf(nameLine) + nameLine.length;
+                let endIndex = i < nameLines.length - 1 ? response.indexOf(nameLines[i+1]) : response.length;
+                
+                if (endIndex === -1) endIndex = response.length;
+                
+                const explanationText = response.substring(startIndex, endIndex);
+                
+                // 尝试分离中英文解释
+                const chineseExpMatch = explanationText.match(/中文解释\s*[：:]+\s*([\s\S]*?)(?=\s*英文解释|$)/);
+                const englishExpMatch = explanationText.match(/英文解释\s*[：:]+\s*([\s\S]*?)(?=\s*中文解释|$)/);
+                
+                names.push({
+                  name: chineseName,
+                  chineseExplanation: chineseExpMatch ? chineseExpMatch[1].trim() : '未提供中文解释',
+                  englishExplanation: englishExpMatch ? englishExpMatch[1].trim() : '未提供英文解释'
+                });
+              }
+            }
+          }
+        }
+        
+        return names;
+            chineseExplanation: match[2] ? match[2].trim() : '未提供中文解释',
+            englishExplanation: match[3] ? match[3].trim() : '未提供英文解释'
+          });
+        }
+        
+        // 如果正则表达式没有匹配到结果，尝试更宽松的解析方法
+        if (names.length === 0) {
+          // 尝试匹配任何可能包含名字的部分
+          const nameLines = response.match(/[\u4e00-\u9fa5]{2,4}\s*[（(][a-zA-Z\s]+[)）]/g);
+          
+          if (nameLines && nameLines.length > 0) {
+            // 找到了可能的中文名
+            for (let i = 0; i < nameLines.length; i++) {
+              const nameLine = nameLines[i];
+              const nameMatch = nameLine.match(/([\u4e00-\u9fa5]{2,4})\s*[（(]([a-zA-Z\s]+)[)）]/);
+              
+              if (nameMatch) {
+                const chineseName = nameMatch[1];
+                const pinyinName = nameMatch[2];
+                
+                // 尝试在名字后面找到解释
+                let startIndex = response.indexOf(nameLine) + nameLine.length;
+                let endIndex = i < nameLines.length - 1 ? response.indexOf(nameLines[i+1]) : response.length;
+                
+                if (endIndex === -1) endIndex = response.length;
+                
+                const explanationText = response.substring(startIndex, endIndex);
+                
+                // 尝试分离中英文解释
+                let chineseExplanation = '未提供中文解释';
+                let englishExplanation = '未提供英文解释';
+                
+                const chineseExplanationMatch = explanationText.match(/中文解释[：:]+\s*([\s\S]*?)(?=英文解释|$)/i);
+                if (chineseExplanationMatch) {
+                  chineseExplanation = chineseExplanationMatch[1].trim();
+                }
+                
+                const englishExplanationMatch = explanationText.match(/英文解释[：:]+\s*([\s\S]*?)$/i);
+                if (englishExplanationMatch) {
+                  englishExplanation = englishExplanationMatch[1].trim();
+                }
+                
+                names.push({
+                  name: `${chineseName} (${pinyinName})`,
+                  chineseExplanation,
+                  englishExplanation
+                });
+              }
+            }
+          } else {
+            // 最后的尝试：分割整个响应并尝试提取名字和解释
+            const sections = response.split(/\n\s*\n|\n(?=名字|\d+[.．、])/g).filter(Boolean);
+            
+            for (const section of sections) {
+              const lines = section.split('\n').filter(Boolean);
+              if (lines.length >= 2) {
+                // 假设第一行包含名字
+                const nameMatch = lines[0].match(/(?:名字\s*\d+\s*[：:]+\s*)?([\u4e00-\u9fa5]{2,4}(?:\s*[（(][a-zA-Z\s]+[)）])?)/);
+                const name = nameMatch ? nameMatch[1].trim() : lines[0].trim();
+                
+                let chineseExplanation = '';
+                let englishExplanation = '';
+                let inChinese = true;
+                
+                for (let i = 1; i < lines.length; i++) {
+                  if (lines[i].includes('中文解释') || lines[i].match(/^\s*[\u4e00-\u9fa5]/)) {
+                    inChinese = true;
+                    if (lines[i].includes('中文解释')) continue;
+                  }
+                  if (lines[i].includes('英文解释') || lines[i].match(/^\s*[a-zA-Z]/)) {
+                    inChinese = false;
+                    if (lines[i].includes('英文解释')) continue;
+                  }
+                  
+                  if (inChinese) {
+                    chineseExplanation += lines[i] + ' ';
+                  } else {
+                    englishExplanation += lines[i] + ' ';
+                  }
+                }
+                
+                names.push({
+                  name,
+                  chineseExplanation: chineseExplanation.trim() || '未提供中文解释',
+                  englishExplanation: englishExplanation.trim() || '未提供英文解释'
+                });
+              }
+            }
+          }
+        
+        return names;
+      }
+      
+      function displayResults(names) {
+        resultsElement.innerHTML = '';
+        
+        if (names.length === 0) {
+          resultsElement.innerHTML = '<p>无法解析AI生成的名字，请重试。</p>';
+          resultsElement.style.display = 'block';
+          return;
+        }
+        
+        for (const nameObj of names) {
+          const nameCard = document.createElement('div');
+          nameCard.className = 'name-card';
+          
+          nameCard.innerHTML = `
+            <div class="chinese-name">${nameObj.name}</div>
+            <div class="meaning">
+              <div class="meaning-title">中文解释：</div>
+              <p>${nameObj.chineseExplanation}</p>
+            </div>
+            <div class="meaning">
+              <div class="meaning-title">英文解释：</div>
+              <p>${nameObj.englishExplanation}</p>
+            </div>
+          `;
+          
+          resultsElement.appendChild(nameCard);
+        }
+        
+        resultsElement.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

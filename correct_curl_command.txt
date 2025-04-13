@@ -1,0 +1,19 @@
+# 正确格式的DeepSeek API调用示例
+
+curl https://ark.cn-beijing.volces.com/api/v3/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 4d741fcd-733b-454f-bc06-7326e3d824ec" \
+  -d '{ 
+    "model": "deepseek-r1-250120",
+    "messages": [
+        {
+            "role": "user",
+            "content": "我要有研究推理模型与非推理模型区别的课题，怎么体现我的专业性"
+        }
+    ]
+}'
+
+# 原始命令中的问题：
+# 1. JSON结构末尾混入了额外文本 "你试下用这个参考的调用指南"
+# 2. 这导致JSON格式无效，无法被正确解析
+# 3. 上面提供的是修复后的正确格式

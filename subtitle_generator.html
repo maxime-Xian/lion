@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片字幕生成器</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="file"],
+    input[type="number"],
+    input[type="color"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 150px;
+      resize: vertical;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .control-item {
+      flex: 1 1 200px;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      flex: 1;
+      transition: background-color 0.3s;
+    }
+    .generate-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .generate-btn:hover {
+      background-color: #45a049;
+    }
+    .save-btn {
+      background-color: #2196F3;
+      color: white;
+    }
+    .save-btn:hover {
+      background-color: #0b7dda;
+    }
+    .preview-container {
+      margin-top: 20px;
+      text-align: center;
+      position: relative;
+    }
+    #preview {
+      max-width: 100%;
+      max-height: 500px;
+      border: 1px solid #ddd;
+      display: none;
+    }
+    .loading {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>图片字幕生成器</h1>
+    
+    <div class="form-group">
+      <label for="imageInput">选择图片:</label>
+      <input type="file" id="imageInput" accept="image/*">
+    </div>
+    
+    <div class="controls">
+      <div class="control-item">
+        <label for="subtitleHeight">字幕高度(px):</label>
+        <input type="number" id="subtitleHeight" value="40" min="20" max="100">
+      </div>
+      
+      <div class="control-item">
+        <label for="fontSize">字体大小(px):</label>
+        <input type="number" id="fontSize" value="20" min="10" max="50">
+      </div>
+      
+      <div class="control-item">
+        <label for="fontColor">字体颜色:</label>
+        <div style="display: flex; align-items: center;">
+          <input type="color" id="fontColor" value="#FFFFFF" style="margin-right: 10px;">
+          <div id="fontColorPreview" style="width: 30px; height: 20px; border: 1px solid #ddd; background-color: #FFFFFF;"></div>
+        </div>
+      </div>
+      
+      <div class="control-item">
+        <label for="strokeColor">轮廓颜色:</label>
+        <div style="display: flex; align-items: center;">
+          <input type="color" id="strokeColor" value="#000000" style="margin-right: 10px;">
+          <div id="strokeColorPreview" style="width: 30px; height: 20px; border: 1px solid #ddd; background-color: #000000;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="subtitleText">字幕文本 (每行一句):</label>
+      <textarea id="subtitleText" placeholder="在这里输入字幕文本，每行一句..."></textarea>
+    </div>
+    
+    <div class="buttons">
+      <button class="generate-btn" id="generateBtn">生成字幕图片</button>
+      <button class="save-btn" id="saveBtn" disabled>保存图片</button>
+    </div>
+    
+    <div class="preview-container">
+      <div class="loading">处理中...</div>
+      <canvas id="canvas" style="display:none;"></canvas>
+      <img id="preview" alt="预览">
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const imageInput = document.getElementById('imageInput');
+      const subtitleHeight = document.getElementById('subtitleHeight');
+      const fontSize = document.getElementById('fontSize');
+      const fontColor = document.getElementById('fontColor');
+      const strokeColor = document.getElementById('strokeColor');
+      const fontColorPreview = document.getElementById('fontColorPreview');
+      const strokeColorPreview = document.getElementById('strokeColorPreview');
+      const subtitleText = document.getElementById('subtitleText');
+      const generateBtn = document.getElementById('generateBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const preview = document.getElementById('preview');
+      const canvas = document.getElementById('canvas');
+      
+      // 初始化颜色预览
+      fontColorPreview.style.backgroundColor = fontColor.value;
+      strokeColorPreview.style.backgroundColor = strokeColor.value;
+      
+      // 添加颜色变化事件监听器
+      fontColor.addEventListener('input', function() {
+        fontColorPreview.style.backgroundColor = this.value;
+      });
+      
+      strokeColor.addEventListener('input', function() {
+        strokeColorPreview.style.backgroundColor = this.value;
+      });
+      const ctx = canvas.getContext('2d');
+      const loading = document.querySelector('.loading');
+      
+      let originalImage = null;
+      
+      // 监听图片上传
+      imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            originalImage = new Image();
+            originalImage.onload = function() {
+              // 重置预览
+              preview.style.display = 'none';
+              saveBtn.disabled = true;
+            };
+            originalImage.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      
+      // 生成字幕图片
+      generateBtn.addEventListener('click', function() {
+        if (!originalImage) {
+          alert('请先选择一张图片');
+          return;
+        }
+        
+        const lines = subtitleText.value.trim().split('\n').filter(line => line.trim() !== '');
+        if (lines.length === 0) {
+          alert('请输入至少一行字幕文本');
+          return;
+        }
+        
+        loading.style.display = 'block';
+        preview.style.display = 'none';
+        
+        // 设置画布尺寸
+        const height = parseInt(subtitleHeight.value);
+        canvas.width = originalImage.width;
+        canvas.height = originalImage.height + (height * lines.length);
+        
+        // 绘制原始图片
+        ctx.drawImage(originalImage, 0, 0);
+        
+        // 设置字体样式
+        const fontSizeValue = parseInt(fontSize.value);
+        ctx.font = `${fontSizeValue}px Arial, "Microsoft YaHei"`;
+        ctx.textAlign = 'center';
+        
+        // 获取第一行字幕所在高度的图片切片
+        const firstSubtitleY = originalImage.height;
+        const subtitleBackgroundImage = ctx.getImageData(0, firstSubtitleY - height, canvas.width, height);
+        
+        // 绘制字幕背景和文本
+        lines.forEach((line, index) => {
+          const y = originalImage.height + (index * height);
+          
+          // 绘制背景条 - 使用第一行字幕位置的图片切片
+          ctx.putImageData(subtitleBackgroundImage, 0, y);
+          
+          // 添加半透明黑色背景
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(0, y, canvas.width, height);
+          
+          // 绘制文本轮廓
+          ctx.strokeStyle = strokeColor.value;
+          ctx.lineWidth = 2;
+          ctx.strokeText(line, canvas.width / 2, y + (height / 2) + (fontSizeValue / 3));
+          
+          // 绘制文本
+          ctx.fillStyle = fontColor.value;
+          ctx.fillText(line, canvas.width / 2, y + (height / 2) + (fontSizeValue / 3));
+          
+          // 添加分割线（除了最后一行）
+          if (index < lines.length - 1) {
+            ctx.beginPath();
+            ctx.moveTo(0, y + height);
+            ctx.lineTo(canvas.width, y + height);
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        });
+        
+        // 显示预览
+        preview.src = canvas.toDataURL('image/png');
+        preview.style.display = 'block';
+        saveBtn.disabled = false;
+        loading.style.display = 'none';
+      });
+      
+      // 保存图片
+      saveBtn.addEventListener('click', function() {
+        const link = document.createElement('a');
+        link.download = '字幕图片.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    });
+  </script>
+</body>
+</html>

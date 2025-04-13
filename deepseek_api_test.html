@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepSeek API 测试工具</title>
+  <style>
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    button {
+      background-color: #1890ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #40a9ff;
+    }
+    .response {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f0f8ff;
+      border-radius: 4px;
+      border-left: 4px solid #1890ff;
+      white-space: pre-wrap;
+      font-family: monospace;
+      display: none;
+    }
+    .loading {
+      text-align: center;
+      margin-top: 20px;
+      display: none;
+    }
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1890ff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .error {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff1f0;
+      border-radius: 4px;
+      border-left: 4px solid #ff4d4f;
+      display: none;
+    }
+    .examples {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .example-item {
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .example-item:hover {
+      background-color: #f0f0f0;
+    }
+    .code-block {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>DeepSeek API 测试工具</h1>
+    
+    <div class="form-group">
+      <label for="apiKey">API 密钥</label>
+      <input type="text" id="apiKey" value="4d741fcd-733b-454f-bc06-7326e3d824ec" placeholder="输入您的 DeepSeek API 密钥">
+    </div>
+    
+    <div class="form-group">
+      <label for="prompt">输入提示词</label>
+      <textarea id="prompt" placeholder="输入您想要发送给 DeepSeek API 的提示词">我要有研究推理模型与非推理模型区别的课题，怎么体现我的专业性</textarea>
+    </div>
+    
+    <button id="sendBtn">发送请求</button>
+    
+    <div class="loading" id="loading">
+      <div class="loading-spinner"></div>
+      <p>正在请求 DeepSeek API，请稍候...</p>
+    </div>
+    
+    <div class="error" id="error"></div>
+    
+    <div class="response" id="response"></div>
+    
+    <div class="examples">
+      <h3>示例 curl 命令</h3>
+      <div class="code-block">
+        <pre>curl https://ark.cn-beijing.volces.com/api/v3/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 4d741fcd-733b-454f-bc06-7326e3d824ec" \
+  -d '{ 
+    "model": "deepseek-r1-250120",
+    "messages": [
+        {
+            "role": "user",
+            "content": "我要有研究推理模型与非推理模型区别的课题，怎么体现我的专业性"
+        }
+    ]
+}'</pre>
+      </div>
+      
+      <h3>示例提示词</h3>
+      <div class="example-item" onclick="setPrompt('我要有研究推理模型与非推理模型区别的课题，怎么体现我的专业性')">
+        研究推理模型与非推理模型区别的课题，如何体现专业性
+      </div>
+      <div class="example-item" onclick="setPrompt('请解释大型语言模型中的推理能力是如何工作的？')">
+        解释大型语言模型中的推理能力是如何工作的
+      </div>
+      <div class="example-item" onclick="setPrompt('比较一下基于推理的AI模型和非推理模型在解决复杂问题时的优缺点')">
+        比较推理AI模型和非推理模型的优缺点
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sendBtn = document.getElementById('sendBtn');
+      const promptInput = document.getElementById('prompt');
+      const apiKeyInput = document.getElementById('apiKey');
+      const loadingElement = document.getElementById('loading');
+      const responseElement = document.getElementById('response');
+      const errorElement = document.getElementById('error');
+      
+      sendBtn.addEventListener('click', async function() {
+        const prompt = promptInput.value.trim();
+        const apiKey = apiKeyInput.value.trim();
+        
+        if (!prompt) {
+          showError('请输入提示词');
+          return;
+        }
+        
+        if (!apiKey) {
+          showError('请输入API密钥');
+          return;
+        }
+        
+        // 显示加载状态
+        loadingElement.style.display = 'block';
+        responseElement.style.display = 'none';
+        errorElement.style.display = 'none';
+        
+        try {
+          // 构建请求体
+          const requestBody = {
+            model: 'deepseek-r1-250120',
+            messages: [
+              { role: 'user', content: `根据${prompt}生成3个有趣的中文名，每个名字包含文化解释和幽默元素` }
+            ],
+            temperature: 0.7,
+            max_tokens: 1000
+          };
+          
+          // 通过代理服务器发送请求
+          const response = await fetch('http://localhost:3001/api/proxy', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              apiKey: apiKey,
+              requestBody: requestBody
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`API请求失败: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          
+          // 显示响应
+          responseElement.textContent = JSON.stringify(data, null, 2);
+          responseElement.style.display = 'block';
+        } catch (error) {
+          showError(`请求出错: ${error.message}`);
+        } finally {
+          loadingElement.style.display = 'none';
+        }
+      });
+      
+      function showError(message) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+      }
+    });
+    
+    function setPrompt(text) {
+      document.getElementById('prompt').value = text;
+    }
+  </script>
+</body>
+</html>
