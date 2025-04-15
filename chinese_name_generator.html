@@ -283,49 +283,6 @@
                 const explanationText = response.substring(startIndex, endIndex);
                 
                 // 尝试分离中英文解释
-                const chineseExpMatch = explanationText.match(/中文解释\s*[：:]+\s*([\s\S]*?)(?=\s*英文解释|$)/);
-                const englishExpMatch = explanationText.match(/英文解释\s*[：:]+\s*([\s\S]*?)(?=\s*中文解释|$)/);
-                
-                names.push({
-                  name: chineseName,
-                  chineseExplanation: chineseExpMatch ? chineseExpMatch[1].trim() : '未提供中文解释',
-                  englishExplanation: englishExpMatch ? englishExpMatch[1].trim() : '未提供英文解释'
-                });
-              }
-            }
-          }
-        }
-        
-        return names;
-            chineseExplanation: match[2] ? match[2].trim() : '未提供中文解释',
-            englishExplanation: match[3] ? match[3].trim() : '未提供英文解释'
-          });
-        }
-        
-        // 如果正则表达式没有匹配到结果，尝试更宽松的解析方法
-        if (names.length === 0) {
-          // 尝试匹配任何可能包含名字的部分
-          const nameLines = response.match(/[\u4e00-\u9fa5]{2,4}\s*[（(][a-zA-Z\s]+[)）]/g);
-          
-          if (nameLines && nameLines.length > 0) {
-            // 找到了可能的中文名
-            for (let i = 0; i < nameLines.length; i++) {
-              const nameLine = nameLines[i];
-              const nameMatch = nameLine.match(/([\u4e00-\u9fa5]{2,4})\s*[（(]([a-zA-Z\s]+)[)）]/);
-              
-              if (nameMatch) {
-                const chineseName = nameMatch[1];
-                const pinyinName = nameMatch[2];
-                
-                // 尝试在名字后面找到解释
-                let startIndex = response.indexOf(nameLine) + nameLine.length;
-                let endIndex = i < nameLines.length - 1 ? response.indexOf(nameLines[i+1]) : response.length;
-                
-                if (endIndex === -1) endIndex = response.length;
-                
-                const explanationText = response.substring(startIndex, endIndex);
-                
-                // 尝试分离中英文解释
                 let chineseExplanation = '未提供中文解释';
                 let englishExplanation = '未提供英文解释';
                 
@@ -386,6 +343,7 @@
               }
             }
           }
+        }
         
         return names;
       }
