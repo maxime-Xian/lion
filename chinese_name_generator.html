@@ -155,8 +155,8 @@
       const resultsElement = document.getElementById('results');
       const errorElement = document.getElementById('error');
       
-      // API密钥
-      const API_KEY = window.DEEPSEEK_API_KEY || '';
+      // 从环境变量获取API密钥
+      const API_KEY = process.env.DEEPSEEK_API_KEY || '';
       
       console.log('DOM已加载，正在设置事件监听器...');
       

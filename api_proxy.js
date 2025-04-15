@@ -16,11 +16,12 @@ const server = http.createServer((req, res) => {
     
     req.on('end', () => {
       try {
-        const { apiKey, requestBody } = JSON.parse(body);
+        const { requestBody } = JSON.parse(body);
+        const apiKey = process.env.DEEPSEEK_API_KEY;
         
         if (!apiKey) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: '请提供API密钥' }));
+          res.end(JSON.stringify({ error: '缺少API密钥配置' }));
           return;
         }
         
