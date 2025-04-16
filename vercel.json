@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "server.js", "use": "@vercel/node" },
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "*.js", "use": "@vercel/static" },
+    { "src": "*.css", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "server.js" },
+    { "src": "/chinese_name_generator.html", "dest": "/chinese_name_generator.html" },
+    { "src": "/life_coach.html", "dest": "/life_coach.html" },
+    { "src": "/travel_assistant.html", "dest": "/travel_assistant.html" },
+    { "src": "/flowering_tree.html", "dest": "/flowering_tree.html" },
+    { "src": "/", "dest": "/chinese_name_generator.html" },
+    { "src": "/(.*)", "dest": "/server.js" }
+  ],
+  "env": {
+    "DEEPSEEK_API_KEY": "@deepseek_api_key"
+  }
+}
