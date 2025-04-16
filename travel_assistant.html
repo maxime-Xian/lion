@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能商旅通 - 中国人海外商旅助手</title>
+  <style>
+    :root {
+      --primary-color: #1890ff;
+      --secondary-color: #52c41a;
+      --danger-color: #f5222d;
+      --warning-color: #faad14;
+      --text-color: #333;
+      --light-text: #666;
+      --border-color: #eee;
+      --bg-color: #f5f5f5;
+      --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 414px; /* 模拟手机屏幕宽度 */
+      margin: 0 auto;
+      background-color: white;
+      min-height: 100vh;
+      position: relative;
+    }
+    
+    .header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    
+    .search-bar {
+      padding: 15px;
+      background-color: white;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 14px;
+      background-color: var(--bg-color);
+    }
+    
+    .main-features {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 20px 15px;
+      gap: 15px;
+      border-bottom: 10px solid var(--bg-color);
+    }
+    
+    .feature-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .feature-item:hover {
+      transform: translateY(-3px);
+      background-color: rgba(24, 144, 255, 0.1);
+      border-radius: 8px;
+    }
+    
+    .feature-item:active {
+      transform: translateY(0);
+      background-color: rgba(24, 144, 255, 0.2);
+    }
+    
+    .feature-icon {
+      width: 50px;
+      height: 50px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      color: white;
+      font-size: 24px;
+    }
+    
+    .feature-title {
+      font-size: 12px;
+      color: var(--light-text);
+    }
+    
+    .section-title {
+      padding: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .card {
+      margin: 15px;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+    }
+    
+    .card-header {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-header span {
+      color: var(--primary-color);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .card-header span:hover {
+      text-decoration: underline;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    
+    .card-content {
+      padding: 15px;
+    }
+    
+    .safety-map {
+      height: 200px;
+      background-color: #e1e1e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--light-text);
+      margin-bottom: 15px;
+    }
+    
+    .safety-indicators {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    
+    .indicator {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .indicator-value {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .indicator-label {
+      font-size: 12px;
+      color: var(--light-text);
+    }
+    
+    .hotel-list, .ticket-list, .restaurant-list {
+      display: flex;
+      overflow-x: auto;
+      padding: 10px 0;
+      gap: 15px;
+      scrollbar-width: none; /* Firefox */
+    }
+    
+    .hotel-list::-webkit-scrollbar, 
+    .ticket-list::-webkit-scrollbar,
+    .restaurant-list::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Edge */
+    }
+    
+    .hotel-card, .ticket-card, .restaurant-card {
+      min-width: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      background-color: white;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .hotel-card:hover, .ticket-card:hover, .restaurant-card:hover {
+      background-color: rgba(24, 144, 255, 0.05);
+    }
+    
+    .hotel-image, .ticket-image, .restaurant-image {
+      height: 120px;
+      background-color: #e1e1e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--light-text);
+    }
+    
+    .hotel-details, .ticket-details, .restaurant-details {
+      padding: 10px;
+    }
+    
+    .hotel-name, .ticket-name, .restaurant-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    
+    .hotel-price, .ticket-price, .restaurant-rating {
+      color: var(--danger-color);
+      font-weight: bold;
+      font-size: 16px;
+    }
+    
+    .hotel-features, .ticket-features, .restaurant-features {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    
+    .feature-tag {
+      background-color: var(--bg-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--light-text);
+    }
+    
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 414px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background-color: white;
+      border-top: 1px solid var(--border-color);
+      padding: 8px 0;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: var(--light-text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-item:hover {
+      color: var(--primary-color);
+    }
+    
+    .nav-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    
+    .nav-item.active {
+      color: var(--primary-color);
+    }
+    
+    /* 交通工具选择弹窗样式 */
+    .transport-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .transport-modal-content {
+      width: 90%;
+      max-width: 350px;
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .transport-recommendation {
+      padding: 15px;
+      background-color: rgba(24, 144, 255, 0.1);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .recommendation-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+    
+    .recommended-transport {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .transport-details {
+      margin-left: 15px;
+    }
+    
+    .recommendation-reason {
+      font-size: 12px;
+      color: var(--light-text);
+      margin-top: 5px;
+    }
+    
+    .transport-modal-header {
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .transport-modal-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--text-color);
+    }
+    
+    .transport-close {
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--light-text);
+    }
+    
+    .transport-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 15px;
+      gap: 15px;
+    }
+    
+    .transport-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .transport-option:hover {
+      transform: translateY(-3px);
+    }
+    
+    .transport-icon {
+      width: 50px;
+      height: 50px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      color: white;
+      font-size: 24px;
+    }
+    
+    .transport-name {
+      font-size: 12px;
+      color: var(--light-text);
+      text-align: center;
+    }
+    
+    .itinerary-item {
+      display: flex;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .itinerary-time {
+      width: 60px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .itinerary-content {
+      flex: 1;
+      padding-left: 15px;
+      border-left: 2px solid var(--primary-color);
+    }
+    
+    .itinerary-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .itinerary-location {
+      color: var(--light-text);
+      font-size: 12px;
+    }
+    
+    .ar-preview {
+      height: 200px;
+      background-color: #e1e1e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--light-text);
+      margin-bottom: 15px;
+      position: relative;
+    }
+    
+    .ar-overlay {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .culture-tips {
+      padding: 15px;
+      background-color: #fff7e6;
+      border-left: 4px solid var(--warning-color);
+      margin-bottom: 15px;
+    }
+    
+    .tip-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--warning-color);
+    }
+    
+    /* AI对话功能样式 */
+    .ai-chat-button-container {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .ai-chat-label {
+      background-color: var(--primary-color);
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .ai-chat-button {
+      width: 50px;
+      height: 50px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .ai-chat-button:hover {
+      transform: scale(1.1);
+    }
+    
+    .ai-chat-container {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .ai-chat-container.active {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .ai-chat-header {
+      padding: 12px 15px;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .ai-chat-title {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    
+    .ai-chat-close {
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    .ai-chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .ai-message, .user-message {
+      max-width: 80%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .ai-message {
+      align-self: flex-start;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+    
+    .user-message {
+      align-self: flex-end;
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .ai-chat-input-container {
+      padding: 10px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 10px;
+    }
+    
+    .ai-chat-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+    }
+    
+    .ai-chat-send {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .ai-chat-send:hover {
+      background-color: #0c7cd5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <div class="header">
+      <h1>智能商旅通 - 安全·高效·省钱·好玩</h1>
+    </div>
+    
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <input type="text" class="search-input" placeholder="搜索目的地、酒店、景点...">
+    </div>
+    
+    <!-- 主要功能区 -->
+    <div class="main-features">
+      <div class="feature-item">
+        <div class="feature-icon">🏨</div>
+        <div class="feature-title">安全住宿</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🗺️</div>
+        <div class="feature-title">行程规划</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🎫</div>
+        <div class="feature-title">票务服务</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🚕</div>
+        <div class="feature-title">交通出行</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🍽️</div>
+        <div class="feature-title">餐饮推荐</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">💰</div>
+        <div class="feature-title">财务管理</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-title">AR导览</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🧩</div>
+        <div class="feature-title">更多服务</div>
+      </div>
+    </div>
+    
+    <!-- 安全住宿模块 -->
+    <div class="section-title">安全住宿</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">伦敦安全区域分析</div>
+        <span>更多 ></span>
+      </div>
+      <div class="card-content">
+        <div class="safety-map">[三维安全热力图]</div>
+        <div class="safety-indicators">
+          <div class="indicator">
+            <div class="indicator-value" style="color: #52c41a;">86</div>
+            <div class="indicator-label">安全指数</div>
+          </div>
+          <div class="indicator">
+            <div class="indicator-value">5</div>
+            <div class="indicator-label">警局数量</div>
+          </div>
+          <div class="indicator">
+            <div class="indicator-value">3</div>
+            <div class="indicator-label">医院数量</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">推荐安全酒店</div>
+        <span>更多 ></span>
+      </div>
+      <div class="card-content">
+        <div class="hotel-list">
+          <div class="hotel-card">
+            <div class="hotel-image">[酒店图片]</div>
+            <div class="hotel-details">
+              <div class="hotel-name">伦敦希尔顿酒店</div>
+              <div class="hotel-price">¥1280/晚</div>
+              <div class="hotel-features">
+                <span class="feature-tag">安保优秀</span>
+                <span class="feature-tag">商务设施</span>
+              </div>
+            </div>
+          </div>
+          <div class="hotel-card">
+            <div class="hotel-image">[酒店图片]</div>
+            <div class="hotel-details">
+              <div class="hotel-name">伦敦丽思卡尔顿</div>
+              <div class="hotel-price">¥1680/晚</div>
+              <div class="hotel-features">
+                <span class="feature-tag">24小时安保</span>
+                <span class="feature-tag">高速网络</span>
+              </div>
+            </div>
+          </div>
+          <div class="hotel-card">
+            <div class="hotel-image">[酒店图片]</div>
+            <div class="hotel-details">
+              <div class="hotel-name">伦敦万豪酒店</div>
+              <div class="hotel-price">¥1450/晚</div>
+              <div class="hotel-features">
+                <span class="feature-tag">安全区域</span>
+                <span class="feature-tag">会议设施</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 行程规划模块 -->
+    <div class="section-title">智能行程</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">今日行程安排</div>
+        <span>编辑 ></span>
+      </div>
+      <div class="card-content">
+        <div class="itinerary-item">
+          <div class="itinerary-time">09:00</div>
+          <div class="itinerary-content">
+            <div class="itinerary-title">与Smith公司会面</div>
+            <div class="itinerary-location">伦敦金融城 · 预计90分钟</div>
+          </div>
+        </div>
+        <div class="itinerary-item">
+          <div class="itinerary-time">11:30</div>
+          <div class="itinerary-content">
+            <div class="itinerary-title">商务午餐</div>
+            <div class="itinerary-location">The Ivy · 预计60分钟</div>
+          </div>
+        </div>
+        <div class="itinerary-item">
+          <div class="itinerary-time">14:00</div>
+          <div class="itinerary-content">
+            <div class="itinerary-title">参观大英博物馆</div>
+            <div class="itinerary-location">大英博物馆 · 预计120分钟</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 票务服务模块 -->
+    <div class="section-title">票务服务</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">热门景点门票</div>
+        <span>更多 ></span>
+      </div>
+      <div class="card-content">
+        <div class="ticket-list">
+          <div class="ticket-card">
+            <div class="ticket-image">[景点图片]</div>
+            <div class="ticket-details">
+              <div class="ticket-name">大英博物馆导览</div>
+              <div class="ticket-price">¥120</div>
+              <div class="ticket-features">
+                <span class="feature-tag">中文讲解</span>
+                <span class="feature-tag">免排队</span>
+              </div>
+            </div>
+          </div>
+          <div class="ticket-card">
+            <div class="ticket-image">[景点图片]</div>
+            <div class="ticket-details">
+              <div class="ticket-name">伦敦眼门票</div>
+              <div class="ticket-price">¥280</div>
+              <div class="ticket-features">
+                <span class="feature-tag">VIP通道</span>
+                <span class="feature-tag">含AR导览</span>
+              </div>
+            </div>
+          </div>
+          <div class="ticket-card">
+            <div class="ticket-image">[景点图片]</div>
+            <div class="ticket-details">
+              <div class="ticket-name">白金汉宫参观</div>
+              <div class="ticket-price">¥320</div>
+              <div class="ticket-features">
+                <span class="feature-tag">中文导游</span>
+                <span class="feature-tag">专属时段</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AR导览模块 -->
+    <div class="section-title">AR实景导览</div>
+    <div class="card">
+      <div class="card-content">
+        <div class="ar-preview">
+          [AR导览预览]
+          <div class="ar-overlay">大英博物馆 - 埃及馆</div>
+        </div>
+        <div class="culture-tips">
+          <div class="tip-title">文化小贴士</div>
+          <p>大英博物馆内禁止触摸展品，拍照时请关闭闪光灯。馆内有中文解说器可租用。</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 餐饮推荐模块 -->
+    <div class="section-title">餐饮推荐</div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">商务宴请推荐</div>
+        <span>更多 ></span>
+      </div>
+      <div class="card-content">
+        <div class="restaurant-list">
+          <div class="restaurant-card">
+            <div class="restaurant-image">[餐厅图片]</div>
+            <div class="restaurant-details">
+              <div class="restaurant-name">The Ivy</div>
+              <div class="restaurant-rating">4.8 ⭐</div>
+              <div class="restaurant-features">
+                <span class="feature-tag">英式料理</span>
+                <span class="feature-tag">商务包间</span>
+              </div>
+            </div>
+          </div>
+          <div class="restaurant-card">
+            <div class="restaurant-image">[餐厅图片]</div>
+            <div class="restaurant-details">
+              <div class="restaurant-name">Gordon Ramsay</div>
+              <div class="restaurant-rating">4.9 ⭐</div>
+              <div class="restaurant-features">
+                <span class="feature-tag">米其林三星</span>
+                <span class="feature-tag">预约难</span>
+              </div>
+            </div>
+          </div>
+          <div class="restaurant-card">
+            <div class="restaurant-image">[餐厅图片]</div>
+            <div class="restaurant-details">
+              <div class="restaurant-name">四川饭店伦敦店</div>
+              <div class="restaurant-rating">4.6 ⭐</div>
+              <div class="restaurant-features">
+                <span class="feature-tag">中餐</span>
+                <span class="feature-tag">接待经验丰富</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 底部导航 -->
+    <div style="height: 60px;"></div> <!-- 占位，防止内容被底部导航遮挡 -->
+    <div class="bottom-nav">
+      <a href="#" class="nav-item active">
+        <div class="nav-icon">🏠</div>
+        <div>首页</div>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">🗺️</div>
+        <div>行程</div>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">🎫</div>
+        <div>票务</div>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">🍽️</div>
+        <div>餐饮</div>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon">👤</div>
+        <div>我的</div>
+      </a>
+    </div>
+  </div>
+  
+  <!-- AI对话功能 -->
+  <div class="ai-chat-button-container">
+    <div class="ai-chat-label">客服</div>
+    <div class="ai-chat-button">🤖</div>
+  </div>
+  <div class="ai-chat-container">
+    <div class="ai-chat-header">
+      <div class="ai-chat-title">智能助手</div>
+      <div class="ai-chat-close">✕</div>
+    </div>
+    <div class="ai-chat-messages">
+      <div class="ai-message">您好！我是您的智能旅行助手，有什么可以帮您的吗？</div>
+    </div>
+    <div class="ai-chat-input-container">
+      <input type="text" class="ai-chat-input" placeholder="请输入您的问题...">
+      <button class="ai-chat-send">➤</button>
+    </div>
+  </div>
+
+  <script>
+    // 确保DOM完全加载后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('商旅通小程序界面已加载');
+      
+      // 添加调试信息，检查元素是否被正确选择
+      const featureItems = document.querySelectorAll('.feature-item');
+      console.log('找到功能项数量:', featureItems.length);
+      
+      // 为每个功能项添加点击事件，并添加视觉反馈
+      featureItems.forEach((item, index) => {
+        console.log(`为功能项 ${index + 1} 添加点击事件`);
+        // 添加鼠标悬停效果，提供视觉反馈
+        item.style.cursor = 'pointer';
+        
+        // 使用事件委托确保事件被正确捕获
+        item.addEventListener('click', function(e) {
+          console.log('功能项被点击');
+          const featureTitle = this.querySelector('.feature-title').textContent;
+          
+          if (featureTitle === '交通出行') {
+            // 创建交通工具选择弹窗
+            const transportModal = document.createElement('div');
+            transportModal.className = 'transport-modal';
+            transportModal.innerHTML = `
+              <div class="transport-modal-content">
+                <div class="transport-modal-header">
+                  <h3>选择交通方式</h3>
+                  <span class="transport-close">✕</span>
+                </div>
+                <div class="transport-options">
+                  <div class="transport-option">
+                    <div class="transport-icon">🚌</div>
+                    <div class="transport-name">公交车</div>
+                  </div>
+                  <div class="transport-option">
+                    <div class="transport-icon">🚕</div>
+                    <div class="transport-name">打车</div>
+                  </div>
+                  <div class="transport-option">
+                    <div class="transport-icon">🚇</div>
+                    <div class="transport-name">地铁</div>
+                  </div>
+                  <div class="transport-option">
+                    <div class="transport-icon">🚆</div>
+                    <div class="transport-name">火车</div>
+                  </div>
+                  <div class="transport-option">
+                    <div class="transport-icon">✈️</div>
+                    <div class="transport-name">飞机</div>
+                  </div>
+                  <div class="transport-option">
+                    <div class="transport-icon">🚢</div>
+                    <div class="transport-name">轮船</div>
+                  </div>
+                </div>
+              </div>
+            `;
+            document.querySelector('.container').appendChild(transportModal);
+            
+            // 添加关闭弹窗功能
+            const closeBtn = transportModal.querySelector('.transport-close');
+            closeBtn.addEventListener('click', function() {
+              transportModal.remove();
+            });
+            
+            // 添加交通选项点击事件
+            const transportOptions = transportModal.querySelectorAll('.transport-option');
+            transportOptions.forEach(option => {
+              option.addEventListener('click', function() {
+                const transportName = this.querySelector('.transport-name').textContent;
+                alert(`您选择了${transportName}，该功能正在开发中...`);
+                transportModal.remove();
+              });
+            });
+          } else {
+            alert(`您点击了${featureTitle}功能，该功能正在开发中...`);
+          }
+        }, true); // 使用捕获阶段
+      });
+      
+      // 底部导航交互
+      const navItems = document.querySelectorAll('.nav-item');
+      console.log('找到导航项数量:', navItems.length);
+      
+      navItems.forEach((item, index) => {
+        console.log(`为导航项 ${index + 1} 添加点击事件`);
+        item.addEventListener('click', function(e) {
+          console.log('导航项被点击');
+          e.preventDefault();
+          navItems.forEach(nav => nav.classList.remove('active'));
+          this.classList.add('active');
+        }, true); // 使用捕获阶段
+      });
+    });
+    
+    // 添加备用事件监听器，以防DOMContentLoaded已经触发
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      console.log('文档已加载完成，立即初始化事件');
+      setTimeout(function() {
+        const featureItems = document.querySelectorAll('.feature-item');
+        featureItems.forEach(item => {
+          item.style.cursor = 'pointer';
+          item.addEventListener('click', function() {
+            const featureTitle = this.querySelector('.feature-title').textContent;
+            
+            if (featureTitle === '交通出行') {
+              // 创建交通工具选择弹窗
+              const transportModal = document.createElement('div');
+              transportModal.className = 'transport-modal';
+              
+              // 分析用户行程并推荐交通方式
+              const recommendedTransport = getRecommendedTransport();
+              
+              transportModal.innerHTML = `
+                <div class="transport-modal-content">
+                  <div class="transport-modal-header">
+                    <h3>选择交通方式</h3>
+                    <span class="transport-close">✕</span>
+                  </div>
+                  <div class="transport-recommendation">
+                    <div class="recommendation-title">根据您的行程推荐</div>
+                    <div class="recommended-transport">
+                      <div class="transport-icon">${recommendedTransport.icon}</div>
+                      <div class="transport-details">
+                        <div class="transport-name">${recommendedTransport.name}</div>
+                        <div class="recommendation-reason">${recommendedTransport.reason}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="transport-options">
+                    <div class="transport-option">
+                      <div class="transport-icon">🚌</div>
+                      <div class="transport-name">公交车</div>
+                    </div>
+                    <div class="transport-option">
+                      <div class="transport-icon">🚕</div>
+                      <div class="transport-name">打车</div>
+                    </div>
+                    <div class="transport-option">
+                      <div class="transport-icon">🚇</div>
+                      <div class="transport-name">地铁</div>
+                    </div>
+                    <div class="transport-option">
+                      <div class="transport-icon">🚆</div>
+                      <div class="transport-name">火车</div>
+                    </div>
+                    <div class="transport-option">
+                      <div class="transport-icon">✈️</div>
+                      <div class="transport-name">飞机</div>
+                    </div>
+                    <div class="transport-option">
+                      <div class="transport-icon">🚢</div>
+                      <div class="transport-name">轮船</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+              document.querySelector('.container').appendChild(transportModal);
+              
+              // 添加关闭弹窗功能
+              const closeBtn = transportModal.querySelector('.transport-close');
+              closeBtn.addEventListener('click', function() {
+                transportModal.remove();
+              });
+              
+              // 添加交通选项点击事件
+              const transportOptions = transportModal.querySelectorAll('.transport-option');
+              transportOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                  const transportName = this.querySelector('.transport-name').textContent;
+                  alert(`您选择了${transportName}，该功能正在开发中...`);
+                  transportModal.remove();
+                });
+              });
+              
+              // 点击推荐交通方式时自动选择
+              const recommendedTransport = transportModal.querySelector('.recommended-transport');
+              recommendedTransport.addEventListener('click', function() {
+                const transportName = this.querySelector('.transport-name').textContent;
+                alert(`您选择了推荐的${transportName}，该功能正在开发中...`);
+                transportModal.remove();
+              });
+            
+            } else {
+              alert(`您点击了${featureTitle}功能，该功能正在开发中...`);
+            }
+            
+            // 根据用户行程推荐交通方式
+            function getRecommendedTransport() {
+              // 模拟获取用户当前行程数据
+              // 实际应用中，这些数据应该从用户的行程规划或位置信息中获取
+              const userItinerary = {
+                startLocation: "酒店",
+                destination: "会展中心",
+                distance: 8.5, // 公里
+                timeConstraint: "紧急", // 紧急/宽松
+                weather: "晴天", // 晴天/雨天/雪天
+                luggage: "少量", // 无/少量/大量
+                budget: "经济", // 经济/舒适/豪华
+                nearbyStations: {
+                  subway: 0.5, // 距离地铁站0.5公里
+                  bus: 0.2, // 距离公交站0.2公里
+                  train: 3.0 // 距离火车站3公里
+                }
+              };
+              
+              // 根据行程数据分析最佳交通方式
+              let bestTransport = { name: "", icon: "", reason: "", score: 0 };
+              
+              // 评分系统：根据不同因素为每种交通方式评分
+              const transports = [
+                {
+                  name: "公交车",
+                  icon: "🚌",
+                  score: calculateScore("公交车", userItinerary),
+                  reason: generateReason("公交车", userItinerary)
+                },
+                {
+                  name: "打车",
+                  icon: "🚕",
+                  score: calculateScore("打车", userItinerary),
+                  reason: generateReason("打车", userItinerary)
+                },
+                {
+                  name: "地铁",
+                  icon: "🚇",
+                  score: calculateScore("地铁", userItinerary),
+                  reason: generateReason("地铁", userItinerary)
+                },
+                {
+                  name: "火车",
+                  icon: "🚆",
+                  score: calculateScore("火车", userItinerary),
+                  reason: generateReason("火车", userItinerary)
+                },
+                {
+                  name: "飞机",
+                  icon: "✈️",
+                  score: calculateScore("飞机", userItinerary),
+                  reason: generateReason("飞机", userItinerary)
+                },
+                {
+                  name: "轮船",
+                  icon: "🚢",
+                  score: calculateScore("轮船", userItinerary),
+                  reason: generateReason("轮船", userItinerary)
+                }
+              ];
+              
+              // 选择得分最高的交通方式
+              bestTransport = transports.reduce((best, current) => {
+                return current.score > best.score ? current : best;
+              }, { name: "", icon: "", reason: "", score: 0 });
+              
+              return bestTransport;
+            }
+            
+            // 计算每种交通方式的得分
+            function calculateScore(transportType, itinerary) {
+              let score = 0;
+              
+              switch(transportType) {
+                case "公交车":
+                  // 近距离、经济预算加分
+                  score += itinerary.distance < 10 ? 20 : 0;
+                  score += itinerary.budget === "经济" ? 15 : 0;
+                  score += itinerary.nearbyStations.bus < 0.5 ? 25 : 10;
+                  // 紧急时间约束、大量行李减分
+                  score -= itinerary.timeConstraint === "紧急" ? 15 : 0;
+                  score -= itinerary.luggage === "大量" ? 20 : 0;
+                  score -= itinerary.weather === "雨天" ? 10 : 0;
+                  break;
+                  
+                case "打车":
+                  // 紧急时间约束、舒适预算、雨天加分
+                  score += itinerary.timeConstraint === "紧急" ? 25 : 0;
+                  score += itinerary.budget === "舒适" || itinerary.budget === "豪华" ? 20 : 0;
+                  score += itinerary.weather === "雨天" || itinerary.weather === "雪天" ? 15 : 0;
+                  score += itinerary.luggage === "大量" ? 15 : 0;
+                  // 经济预算、长距离减分
+                  score -= itinerary.budget === "经济" ? 15 : 0;
+                  score -= itinerary.distance > 30 ? 10 : 0;
+                  break;
+                  
+                case "地铁":
+                  // 中等距离、避开交通拥堵、经济预算加分
+                  score += itinerary.distance >= 5 && itinerary.distance <= 30 ? 25 : 10;
+                  score += itinerary.timeConstraint === "紧急" ? 20 : 0;
+                  score += itinerary.budget === "经济" ? 20 : 0;
+                  score += itinerary.nearbyStations.subway < 1 ? 25 : 0;
+                  // 大量行李、远离地铁站减分
+                  score -= itinerary.luggage === "大量" ? 15 : 0;
+                  score -= itinerary.nearbyStations.subway > 2 ? 30 : 0;
+                  break;
+                  
+                case "火车":
+                  // 长距离加分
+                  score += itinerary.distance > 50 ? 30 : 0;
+                  score += itinerary.distance > 30 && itinerary.distance <= 50 ? 15 : 0;
+                  score += itinerary.nearbyStations.train < 2 ? 15 : 0;
+                  // 短距离、紧急时间约束减分
+                  score -= itinerary.distance < 30 ? 25 : 0;
+                  break;
+                  
+                case "飞机":
+                  // 超长距离加分
+                  score += itinerary.distance > 500 ? 50 : 0;
+                  score += itinerary.distance > 200 && itinerary.distance <= 500 ? 20 : 0;
+                  // 短距离、经济预算减分
+                  score -= itinerary.distance < 200 ? 40 : 0;
+                  score -= itinerary.budget === "经济" ? 10 : 0;
+                  break;
+                  
+                case "轮船":
+                  // 特殊情况（跨海、观光）加分
+                  // 由于没有水路信息，默认得分较低
+                  score += 5;
+                  // 几乎所有常规城市出行场景减分
+                  score -= 30;
+                  break;
+              }
+              
+              return score;
+            }
+            
+            // 生成推荐理由
+            function generateReason(transportType, itinerary) {
+              switch(transportType) {
+                case "公交车":
+                  if (itinerary.nearbyStations.bus < 0.5) {
+                    return `距离公交站仅${itinerary.nearbyStations.bus * 1000}米，经济实惠，适合您的${itinerary.budget}预算`;
+                  } else {
+                    return "经济实惠，适合短途出行";
+                  }
+                  
+                case "打车":
+                  if (itinerary.timeConstraint === "紧急") {
+                    return "最快捷的出行方式，适合您的紧急行程需求";
+                  } else if (itinerary.weather === "雨天" || itinerary.weather === "雪天") {
+                    return `当前${itinerary.weather}，打车可避免淋雨，提供舒适体验`;
+                  } else if (itinerary.luggage === "大量") {
+                    return "您携带较多行李，打车是便捷的选择";
+                  } else {
+                    return "便捷舒适，随叫随到";
+                  }
+                  
+                case "地铁":
+                  if (itinerary.nearbyStations.subway < 1) {
+                    return `距离地铁站仅${itinerary.nearbyStations.subway * 1000}米，快速准时，避开地面交通拥堵`;
+                  } else {
+                    return "快速准时，适合中等距离出行";
+                  }
+                  
+                case "火车":
+                  if (itinerary.distance > 50) {
+                    return "适合长途旅行，舒适经济";
+                  } else {
+                    return "连接主要城市区域，适合中长途出行";
+                  }
+                  
+                case "飞机":
+                  if (itinerary.distance > 500) {
+                    return "长途旅行最快选择，节省大量时间";
+                  } else {
+                    return "适合城市间快速往返";
+                  }
+                  
+                case "轮船":
+                  return "特殊水路交通选择，可欣赏沿途风景";
+              }
+            }
+          }, true);
+        });
+      }, 100);
+    }
+    
+    // AI对话功能交互逻辑
+    const aiChatButton = document.querySelector('.ai-chat-button');
+    const aiChatContainer = document.querySelector('.ai-chat-container');
+    const aiChatClose = document.querySelector('.ai-chat-close');
+    const aiChatInput = document.querySelector('.ai-chat-input');
+    const aiChatSend = document.querySelector('.ai-chat-send');
+    const aiChatMessages = document.querySelector('.ai-chat-messages');
+    
+    // 打开/关闭聊天窗口
+    aiChatButton.addEventListener('click', function() {
+      aiChatContainer.classList.add('active');
+      aiChatInput.focus();
+    });
+    
+    aiChatClose.addEventListener('click', function() {
+      aiChatContainer.classList.remove('active');
+    });
+    
+    // 发送消息函数
+    function sendMessage() {
+      const message = aiChatInput.value.trim();
+      if (message) {
+        // 添加用户消息
+        const userMessageElement = document.createElement('div');
+        userMessageElement.className = 'user-message';
+        userMessageElement.textContent = message;
+        aiChatMessages.appendChild(userMessageElement);
+        
+        // 清空输入框
+        aiChatInput.value = '';
+        
+        // 滚动到底部
+        aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        
+        // 模拟AI回复
+        setTimeout(() => {
+          const aiMessageElement = document.createElement('div');
+          aiMessageElement.className = 'ai-message';
+          
+          // 根据用户输入生成简单回复
+          let reply = '';
+          if (message.includes('酒店') || message.includes('住宿')) {
+            reply = '我们为您推荐安全评分高的酒店，您可以在"安全住宿"模块查看详情。';
+          } else if (message.includes('饭店') || message.includes('饭') || message.includes('餐饮')) {
+            reply = '我们为您精选了多家高评分餐厅，包括中餐和当地特色餐厅，您可以在"餐饮推荐"模块查看。';
+          } else if (message.includes('景点') || message.includes('门票')) {
+            reply = '您可以在"票务服务"模块查看热门景点门票，我们提供中文导览和VIP通道服务。';
+          } else if (message.includes('行程') || message.includes('安排')) {
+            reply = '您可以在"智能行程"模块查看和编辑您的行程安排，我们会根据您的偏好智能推荐。';
+          } else {
+            reply = '感谢您的咨询，我们将为您提供专业的海外商旅服务。您还有其他问题吗？';
+          }
+          
+          aiMessageElement.textContent = reply;
+          aiChatMessages.appendChild(aiMessageElement);
+          
+          // 滚动到底部
+          aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }, 800);
+      }
+    }
+    
+    // 发送按钮点击事件
+    aiChatSend.addEventListener('click', sendMessage);
+    
+    // 输入框回车事件
+    aiChatInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
