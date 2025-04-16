@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会开花的树</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f5f5f5;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+    
+    .controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .control-group {
+      margin-bottom: 15px;
+    }
+    
+    .control-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .slider-container {
+      display: flex;
+      align-items: center;
+    }
+    
+    .slider {
+      flex: 1;
+      margin-right: 10px;
+    }
+    
+    .slider-value {
+      width: 30px;
+      text-align: right;
+      color: #666;
+    }
+    
+    button {
+      background-color: #1890ff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #40a9ff;
+    }
+    
+    .season-label {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #333;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <div class="control-group">
+      <span class="control-label">树枝角度</span>
+      <div class="slider-container">
+        <input type="range" min="15" max="45" value="25" class="slider" id="angleSlider">
+        <span class="slider-value" id="angleValue">25</span>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <span class="control-label">树枝长度</span>
+      <div class="slider-container">
+        <input type="range" min="60" max="90" value="75" class="slider" id="lengthSlider">
+        <span class="slider-value" id="lengthValue">75</span>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <span class="control-label">树枝数量</span>
+      <div class="slider-container">
+        <input type="range" min="1" max="5" value="3" class="slider" id="branchSlider">
+        <span class="slider-value" id="branchValue">3</span>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <button id="growButton">生长</button>
+      <button id="bloomButton">开花</button>
+      <button id="resetButton">重置</button>
+    </div>
+    
+    <div class="season-label" id="seasonLabel">春天</div>
+  </div>
+  
+  <script>
+    let angle = 25;
+    let lengthRatio = 0.75;
+    let branchCount = 3;
+    let maxDepth = 9;
+    let currentDepth = 0;
+    let growthSpeed = 0.1;
+    let growing = false;
+    let blooming = false;
+    let flowers = [];
+    let season = "春天";
+    let windStrength = 0;
+    let windAngle = 0;
+    
+    function setup() {
+      createCanvas(800, 700);
+      frameRate(30);
+      angleMode(DEGREES);
+      
+      // 控制器事件监听
+      document.getElementById('angleSlider').addEventListener('input', function() {
+        angle = this.value;
+        document.getElementById('angleValue').textContent = angle;
+      });
+      
+      document.getElementById('lengthSlider').addEventListener('input', function() {
+        lengthRatio = this.value / 100;
+        document.getElementById('lengthValue').textContent = this.value;
+      });
+      
+      document.getElementById('branchSlider').addEventListener('input', function() {
+        branchCount = parseInt(this.value);
+        document.getElementById('branchValue').textContent = branchCount;
+      });
+      
+      document.getElementById('growButton').addEventListener('click', function() {
+        growing = true;
+        season = "春天";
+        document.getElementById('seasonLabel').textContent = season;
+      });
+      
+      document.getElementById('bloomButton').addEventListener('click', function() {
+        if (currentDepth >= 7) {
+          blooming = true;
+          season = "夏天";
+          document.getElementById('seasonLabel').textContent = season;
+        }
+      });
+      
+      document.getElementById('resetButton').addEventListener('click', function() {
+        resetTree();
+      });
+    }
+    
+    function resetTree() {
+      currentDepth = 0;
+      growing = false;
+      blooming = false;
+      flowers = [];
+      season = "春天";
+      document.getElementById('seasonLabel').textContent = season;
+    }
+    
+    function draw() {
+      // 根据季节设置背景色
+      if (season === "春天") {
+        background(220, 240, 255);
+      } else if (season === "夏天") {
+        background(200, 230, 255);
+      }
+      
+      // 绘制地面
+      fill(120, 180, 70);
+      rect(0, height - 20, width, 20);
+      
+      // 更新风的效果
+      windStrength = map(noise(frameCount * 0.01), 0, 1, 0, 2);
+      windAngle = map(noise(frameCount * 0.005 + 100), 0, 1, -5, 5);
+      
+      // 树的生长逻辑
+      if (growing && currentDepth < maxDepth) {
+        currentDepth += growthSpeed;
+      }
+      
+      // 绘制树
+      push();
+      translate(width / 2, height - 20);
+      let trunkLength = height * 0.3;
+      drawBranch(0, 0, -90, trunkLength, min(floor(currentDepth), maxDepth));
+      pop();
+      
+      // 开花逻辑
+      if (blooming && flowers.length < 200 && random(1) < 0.3) {
+        addFlower();
+      }
+      
+      // 绘制花朵
+      drawFlowers();
+    }
+    
+    function drawBranch(x, y, angle, length, depth) {
+      // 计算树枝末端坐标
+      let endX = x + length * cos(angle + windAngle * (depth > 5 ? windStrength : 0));
+      let endY = y + length * sin(angle + windAngle * (depth > 5 ? windStrength : 0));
+      
+      // 根据深度设置树枝颜色和粗细
+      if (depth <= 2) {
+        stroke(101, 67, 33); // 深棕色树干
+        strokeWeight(map(depth, 0, 2, 15, 8));
+      } else if (depth <= 4) {
+        stroke(140, 90, 40); // 中等棕色分支
+        strokeWeight(map(depth, 2, 4, 8, 4));
+      } else {
+        stroke(150, 120, 60); // 浅棕色小枝
+        strokeWeight(map(depth, 4, maxDepth, 4, 1.5));
+      }
+      
+      // 绘制树枝
+      line(x, y, endX, endY);
+      
+      // 递归绘制分支
+      if (depth > 0) {
+        for (let i = 0; i < branchCount; i++) {
+          let newAngle = angle - angle / (branchCount - 1) * (i - (branchCount - 1) / 2);
+          push();
+          translate(endX, endY);
+          drawBranch(0, 0, newAngle - angle * 0.2, length * lengthRatio, depth - 1);
+          pop();
+        }
+      }
+      
+      // 记录可能的花朵位置（树枝末端）
+      if (depth === 1 && blooming) {
+        let flowerX = endX + width / 2;
+        let flowerY = endY + height - 20;
+        if (!isFlowerNearby(flowerX, flowerY, 15)) {
+          if (random(1) < 0.3) {
+            flowers.push({
+              x: flowerX,
+              y: flowerY,
+              size: random(5, 12),
+              color: color(random(200, 255), random(100, 200), random(200, 255), 200),
+              angle: random(360),
+              rotationSpeed: random(-1, 1),
+              bloomState: 0
+            });
+          }
+        }
+      }
+    }
+    
+    function isFlowerNearby(x, y, minDist) {
+      for (let flower of flowers) {
+        let d = dist(x, y, flower.x, flower.y);
+        if (d < minDist) return true;
+      }
+      return false;
+    }
+    
+    function addFlower() {
+      // 随机选择树枝末端添加花朵
+      let x = width / 2 + random(-width/4, width/4);
+      let y = random(height/3, height*2/3);
+      
+      if (!isFlowerNearby(x, y, 20)) {
+        flowers.push({
+          x: x,
+          y: y,
+          size: random(5, 15),
+          color: color(random(200, 255), random(100, 200), random(200, 255), 200),
+          angle: random(360),
+          rotationSpeed: random(-0.5, 0.5),
+          bloomState: 0
+        });
+      }
+    }
+    
+    function drawFlowers() {
+      for (let flower of flowers) {
+        push();
+        translate(flower.x, flower.y);
+        rotate(flower.angle);
+        
+        // 花朵绽放动画
+        if (flower.bloomState < 1) {
+          flower.bloomState += 0.02;
+        }
+        
+        let size = flower.size * flower.bloomState;
+        
+        // 绘制花朵
+        noStroke();
+        fill(flower.color);
+        
+        // 花瓣
+        for (let i = 0; i < 5; i++) {
+          push();
+          rotate(i * 72);
+          ellipse(0, -size/2, size * 0.7, size * 1.2);
+          pop();
+        }
+        
+        // 花蕊
+        fill(255, 255, 100);
+        ellipse(0, 0, size * 0.6, size * 0.6);
+        
+        // 更新花朵旋转
+        flower.angle += flower.rotationSpeed * windStrength * 0.2;
+        
+        pop();
+      }
+    }
+  </script>
+</body>
+</html>
