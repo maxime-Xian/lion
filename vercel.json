@@ -16,6 +16,6 @@
     { "src": "/(.*)", "dest": "/server.js" }
   ],
   "env": {
-    "DEEPSEEK_API_KEY": "@deepseek_api_key"
+    "DEEPSEEK_API_KEY": "${DEEPSEEK_API_KEY}"
   }
 }
